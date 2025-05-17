@@ -18,8 +18,13 @@ app.use(pino);
 app.use(helmet());
 app.use(cors());
 app.use(compression());
+const passport = require('passport');
+const authenticate = require('./auth');
 
-// ✅ NEW: Route handler entry
+passport.use(authenticate.strategy());
+app.use(passport.initialize());
+
+
 app.use('/', require('./routes'));
 
 // 404 middleware
