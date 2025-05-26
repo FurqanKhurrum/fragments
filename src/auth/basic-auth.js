@@ -7,7 +7,7 @@ const auth = require('http-auth');
 const passport = require('passport');
 const authPassport = require('http-auth-passport');
 const logger = require('../logger');
-const path = require('path');
+//const path = require('path');
 
 // We expect HTPASSWD_FILE to be defined.
 if (!process.env.HTPASSWD_FILE) {
@@ -18,10 +18,10 @@ if (!process.env.HTPASSWD_FILE) {
 logger.info('Using HTTP Basic Auth for auth');
 
 // Load test users from tests/.htpasswd
-const basic = auth.basic({
-  realm: 'Fragments Test Area',
-  file: path.join(__dirname, '../../tests/.htpasswd'),
-});
+// const basic = auth.basic({
+//   realm: 'Fragments Test Area',
+//   file: path.join(__dirname, '../../tests/.htpasswd'),
+// });
 
 module.exports.strategy = () =>
   // For our Passport authentication strategy, we'll look for a
