@@ -6,7 +6,8 @@ const { authenticate } = require('../auth');
 
 const router = express.Router();
 
-router.use(`/v1`, authenticate(), require('./api'));
+// Protect all /v1 routes with authentication
+router.use('/v1', authenticate(), require('./api'));
 
 router.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
@@ -19,4 +20,13 @@ router.get('/', (req, res) => {
   });
 });
 
+
 module.exports = router;
+
+// src/routes/index.js
+
+/**
+ * Expose all of our API routes on /v1/* to include an API version.
+ * Protect them all so you have to be authenticated in order to access.
+ */
+//router.use(`/v1`, authenticate(), require('./api'));
