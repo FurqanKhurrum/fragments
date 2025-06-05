@@ -1,6 +1,6 @@
 // src/index.js
 
-require('dotenv').config(); // ✅ Load environment variables
+require('dotenv').config();
 
 const logger = require('./logger');
 
@@ -16,5 +16,10 @@ process.on('unhandledRejection', (reason, promise) => {
   throw reason;
 });
 
-// Start your server
-require('./server');
+// Import and start the Express server
+const app = require('./server');
+
+// Mount the health check route at /
+app.get('/', require('./routes/get'));
+app.post('/v1/fragments', require('./routes/api/post'));
+app.get('/v1/fragments/:id', require('./routes/api/get-id'));
