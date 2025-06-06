@@ -1,21 +1,26 @@
-// src/routes/api/post.js
+const { Fragment } = require('../../model/fragment');
 
 module.exports = async (req, res) => {
-  const { Fragment } = require('../../model/fragment');
   const contentType = req.headers['content-type'];
 
-  if (contentType !== 'text/plain') {
-    return res.status(415).json({ status: 'error', message: 'Only text/plain is supported' });
+  if (!Fragment.isSupportedType(contentType)) {
+    return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
   }
 
-  const fragment = new Fragment({
-    ownerId: req.user,
-    type: contentType,
-    size: Buffer.byteLength(req.body),
-  });
+  try {
+    const fragment = new Fragment({
+      ownerId: req.user,
+      type: contentType,
+      size: Buffer.byteLength(req.body),
+    });
 
-  await fragment.save();
-  await fragment.setData(req.body);
+    await fragment.save();
+    await fragment.setData(Buffer.from(req.body));
 
-  res.status(201).json({ status: 'ok', fragment });
+    res.setHeader('Location', `/v1/fragments/${fragment.id}`);
+    res.status(201).json({ status: 'ok', fragment });
+  } catch (err) {
+    console.error('POST /v1/fragments failed:', err);
+    res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+  }
 };
