@@ -111,7 +111,7 @@ class Fragment {
     try {
       const { type } = contentType.parse(value);
       return type === 'text/plain';
-    } catch (e) {
+    } catch {
       return false;
     }
   }
