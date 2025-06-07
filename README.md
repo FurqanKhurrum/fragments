@@ -45,6 +45,20 @@ The `package.json` file includes several scripts to help manage and run the API:
 
 Once the server is running (using any of the `npm run` commands above), you can check if it's working by sending a GET request to the root path (`/`). For example, using `curl`:
 
-*For most operating systems (I.E: Linux):*
+*For most operating systems (i.e., Linux):*
 ```bash
 curl http://localhost:8080
+```
+
+## Configuration
+
+Use the `API_URL` environment variable to control the base URL used when
+returning the `Location` header for newly created fragments. By default, this
+value is set to `http://localhost:8080`, but it can be overridden when deploying
+to other environments.
+
+At this stage, the API only supports storing and retrieving `text/plain`
+fragments. Requests with other content types will return a `415` error.
+
+Authenticated user identifiers are not stored in plain text. Instead, the
+service hashes email addresses before writing them to the database or logs so that even if data is compromised, emails remain private.

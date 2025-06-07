@@ -1,5 +1,6 @@
 const { randomUUID } = require('crypto');
 const contentType = require('content-type');
+const logger = require('../logger');
 
 const {
   readFragment,
@@ -30,17 +31,26 @@ class Fragment {
     this.updated = updated || new Date().toISOString();
     this.type = type;
     this.size = size;
+
+    logger.debug({ id: this.id, ownerId, type, size: this.size }, 'Fragment instance created');
   }
 
   static async byUser(ownerId, expand = false) {
+    logger.debug({ ownerId, expand }, 'Fragment.byUser()');
     const ids = await listFragments(ownerId);
-    if (!expand) return ids;
+    
+    if (!expand) {
+      logger.debug({ ownerId, ids }, 'returning fragment ids');
+      return ids;
+  }
 
-    const fragments = await Promise.all(ids.map((id) => Fragment.byId(ownerId, id)));
+  const fragments = await Promise.all(ids.map((id) => Fragment.byId(ownerId, id)));
+    logger.debug({ ownerId, count: fragments.length }, 'returning expanded fragments');
     return fragments;
   }
 
   static async byId(ownerId, id) {
+    logger.debug({ ownerId, id }, 'Fragment.byId()');
     const data = await readFragment(ownerId, id);
     if (!data) {
       throw new Error('Fragment not found');
@@ -50,16 +60,25 @@ class Fragment {
   }
 
   static async delete(ownerId, id) {
-    return deleteFragment(ownerId, id);
+    //return deleteFragment(ownerId, id);
+    logger.debug({ ownerId, id }, 'Fragment.delete()');
+    await deleteFragment(ownerId, id);
+    logger.info({ id, ownerId }, 'fragment deleted');
   }
 
   async save() {
     this.updated = new Date().toISOString();
     await writeFragment(this);
+    logger.info({ id: this.id }, 'fragment metadata saved');
+    logger.debug({ id: this.id }, 'fragment saved');
   }
 
   async getData() {
-    return readFragmentData(this.ownerId, this.id);
+    //return readFragmentData(this.ownerId, this.id);
+    logger.debug({ id: this.id }, 'get fragment data');
+    const data = await readFragmentData(this.ownerId, this.id);
+    logger.info({ id: this.id, size: data ? data.length : 0 }, 'fragment data retrieved');
+    return data;
   }
 
   async setData(data) {
@@ -71,6 +90,8 @@ class Fragment {
     this.updated = new Date().toISOString();
     await writeFragmentData(this.ownerId, this.id, data);
     await writeFragment(this);
+    logger.info({ id: this.id }, 'fragment data saved');
+    logger.debug({ id: this.id, size: this.size }, 'fragment data updated');
   }
 
   get mimeType() {

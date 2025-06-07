@@ -7,7 +7,8 @@ const auth = require('http-auth');
 const passport = require('passport');
 const authPassport = require('http-auth-passport');
 const logger = require('../logger');
-//const path = require('path');
+// We'll use our authorize middle module
+const authorize = require('./auth-middleware');
 
 // We expect HTPASSWD_FILE to be defined.
 if (!process.env.HTPASSWD_FILE) {
@@ -32,4 +33,6 @@ module.exports.strategy = () =>
     })
   );
 
-module.exports.authenticate = () => passport.authenticate('http', { session: false });
+// Delegate authentication to our authorize middleware so that emails get hashed
+// and we have consistent error handling
+module.exports.authenticate = () => authorize('http');

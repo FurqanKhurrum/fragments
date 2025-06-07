@@ -7,6 +7,8 @@
 const passport = require('passport');
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const { CognitoJwtVerifier } = require('aws-jwt-verify');
+// We'll use our authorize middle module
+const authorize = require('./auth-middleware');
 
 const logger = require('../logger');
 
@@ -58,4 +60,6 @@ module.exports.strategy = () =>
     }
   });
 
-module.exports.authenticate = () => passport.authenticate('bearer', { session: false });
+// Delegate authentication to our authorize middleware so that emails get hashed
+// and errors are handled consistently
+module.exports.authenticate = () => authorize('bearer');
