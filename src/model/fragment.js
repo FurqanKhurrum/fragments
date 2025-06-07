@@ -74,7 +74,6 @@ class Fragment {
   }
 
   async getData() {
-    //return readFragmentData(this.ownerId, this.id);
     logger.debug({ id: this.id }, 'get fragment data');
     const data = await readFragmentData(this.ownerId, this.id);
     logger.info({ id: this.id, size: data ? data.length : 0 }, 'fragment data retrieved');

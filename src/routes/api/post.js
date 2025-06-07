@@ -3,7 +3,6 @@ const contentType = require('content-type');
 const logger = require('../../logger');
 
 module.exports = async (req, res) => {
-  //const contentType = req.headers['content-type'];
   logger.debug({ headers: req.headers }, 'handling POST /v1/fragments');
   let type;
   try {
@@ -13,7 +12,6 @@ module.exports = async (req, res) => {
     return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
   }
 
-  //if (!Fragment.isSupportedType(contentType)) {
   if (!Fragment.isSupportedType(type) || !Buffer.isBuffer(req.body)) {
     logger.warn({ type }, 'unsupported fragment type');
     return res.status(415).json({ status: 'error', message: 'Unsupported content type' });

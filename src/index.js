@@ -16,10 +16,5 @@ process.on('unhandledRejection', (reason, promise) => {
   throw reason;
 });
 
-// Import and start the Express server
-const app = require('./server');
-
-// Mount the health check route at /
-app.get('/', require('./routes/get'));
-app.post('/v1/fragments', require('./routes/api/post'));
-app.get('/v1/fragments/:id', require('./routes/api/get-id'));
+// Start the HTTP server
+require('./server');
