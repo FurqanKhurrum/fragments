@@ -56,7 +56,8 @@ jobs:
 
       - name: Install node dependencies and run tests
         run: npm install-ci-test
-
+  
+  # Trigger rebuild
   docker-hub:
     name: Build and Push to Docker Hub
     needs: [lint, dockerfile-lint, unit-tests]
