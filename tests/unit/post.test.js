@@ -10,8 +10,10 @@ describe('POST /v1/fragments', () => {
     const res = await request(app)
       .post('/v1/fragments')
       .auth('user1@email.com', 'password1')
-      .set('Content-Type', 'application/json')
-      .send('{}');
+      //.set('Content-Type', 'application/json')
+      //.send('{}');
+      .set('Content-Type', 'image/png')
+      .send('fake');
     expect(res.statusCode).toBe(415);
   });
 
@@ -42,6 +44,39 @@ describe('POST /v1/fragments', () => {
     expect(res.body.fragment.type).toContain('text/plain');
   });
 
+  test('creates a fragment with application/json', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/json')
+      .send('{"ok":true}');
+    expect(res.statusCode).toBe(201);
+
+    const id = res.body.fragment.id;
+    const getRes = await request(app)
+      .get(`/v1/fragments/${id}`)
+      .auth('user1@email.com', 'password1');
+    expect(getRes.statusCode).toBe(200);
+    expect(getRes.headers['content-type']).toContain('application/json');
+    expect(getRes.text).toBe('{"ok":true}');
+  });
+
+  test('creates a fragment with a different text/* type', async () => {
+    const res = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/markdown')
+      .send('# title');
+    expect(res.statusCode).toBe(201);
+
+    const id = res.body.fragment.id;
+    const getRes = await request(app)
+      .get(`/v1/fragments/${id}`)
+      .auth('user1@email.com', 'password1');
+    expect(getRes.statusCode).toBe(200);
+    expect(getRes.text).toBe('# title');
+  });
+  
   test('Location header uses request host if API_URL is unset', async () => {
     delete process.env.API_URL;
     const res = await request(app)

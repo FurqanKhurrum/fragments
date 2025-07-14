@@ -2,29 +2,41 @@
 
 const { Fragment } = require('../../model/fragment');
 const logger = require('../../logger');
-const mime = require('mime-types');
 
 module.exports = async (req, res) => {
   try {
-    //logger.debug({ id: req.params.id, user: req.user }, 'fetching fragment');
-    //const fragment = await Fragment.byId(req.user, req.params.id);
-    //const data = await fragment.getData();
-
     const [id, ext] = req.params.id.split('.');
     logger.debug({ id, user: req.user, ext }, 'fetching fragment');
+    
     const fragment = await Fragment.byId(req.user, id);
-
+    
     let type = fragment.type;
     let data;
 
     if (ext) {
-      const requested = mime.lookup(ext);
+      // Map file extensions to MIME types
+      const extensionToMimeType = {
+        'txt': 'text/plain',
+        'html': 'text/html',
+        'md': 'text/markdown',
+        'json': 'application/json'
+      };
+      
+      const requested = extensionToMimeType[ext];
       logger.debug({ ext, requested }, 'format requested via extension');
+      
       if (!requested || !fragment.formats.includes(requested)) {
+        logger.warn({ ext, requested, availableFormats: fragment.formats }, 'unsupported conversion');
         return res.status(415).json({ status: 'error', message: 'Unsupported format' });
       }
-      data = await fragment.getConvertedData(requested);
-      type = requested;
+      
+      try {
+        data = await fragment.getConvertedData(requested);
+        type = requested;
+      } catch (err) {
+        logger.warn({ err }, 'conversion failed');
+        return res.status(415).json({ status: 'error', message: 'Unsupported format' });
+      }
     } else {
       data = await fragment.getData();
     }

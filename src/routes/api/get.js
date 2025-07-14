@@ -5,8 +5,11 @@ const logger = require('../../logger');
 
 module.exports = async (req, res) => {
   try {
-    logger.debug({ user: req.user }, 'listing fragments');
-    const fragments = await Fragment.byUser(req.user, false);
+    //logger.debug({ user: req.user }, 'listing fragments');
+    //const fragments = await Fragment.byUser(req.user, false);
+    const expand = req.query.expand === '1' || req.query.expand === 'true';
+    logger.debug({ user: req.user, expand }, 'listing fragments');
+    const fragments = await Fragment.byUser(req.user, expand);
     logger.info({ user: req.user, count: fragments.length }, 'fragments retrieved');
     res.status(200).json({
       status: 'ok',

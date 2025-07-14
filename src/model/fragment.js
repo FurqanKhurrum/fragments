@@ -37,14 +37,14 @@ class Fragment {
 
   static async byUser(ownerId, expand = false) {
     logger.debug({ ownerId, expand }, 'Fragment.byUser()');
-    const ids = await listFragments(ownerId);
-    
-    if (!expand) {
-      logger.debug({ ownerId, ids }, 'returning fragment ids');
-      return ids;
-  }
+    const results = await listFragments(ownerId, expand);
 
-  const fragments = await Promise.all(ids.map((id) => Fragment.byId(ownerId, id)));
+    if (!expand) {
+      logger.debug({ ownerId, ids: results }, 'returning fragment ids');
+      return results;
+    }
+
+    const fragments = results.map((data) => new Fragment(data));
     logger.debug({ ownerId, count: fragments.length }, 'returning expanded fragments');
     return fragments;
   }
@@ -60,7 +60,6 @@ class Fragment {
   }
 
   static async delete(ownerId, id) {
-    //return deleteFragment(ownerId, id);
     logger.debug({ ownerId, id }, 'Fragment.delete()');
     await deleteFragment(ownerId, id);
     logger.info({ id, ownerId }, 'fragment deleted');
@@ -103,16 +102,62 @@ class Fragment {
   }
 
   get formats() {
-    return ['text/plain'];
+    switch (this.mimeType) {
+      case 'text/plain':
+        return ['text/plain'];
+      case 'text/markdown':
+        return ['text/markdown', 'text/html']; // Fixed: removed text/plain
+      case 'text/html':
+        return ['text/html', 'text/plain'];
+      case 'application/json':
+        return ['application/json', 'text/plain'];
+      default:
+        return [this.mimeType];
+    }
   }
 
   static isSupportedType(value) {
     try {
       const { type } = contentType.parse(value);
-      return type === 'text/plain';
+      return (
+        type === 'text/plain' ||
+        type === 'text/markdown' ||
+        type === 'text/html' ||
+        type === 'application/json' // Added support for application/json
+      );
     } catch {
       return false;
     }
+  }
+
+  async getConvertedData(targetType) {
+    const data = await this.getData();
+    const currentType = this.mimeType;
+
+    if (!targetType || targetType === this.type || targetType === currentType) {
+      return data;
+    }
+
+    if (!this.formats.includes(targetType)) {
+      throw new Error('Unsupported conversion');
+    }
+
+    const str = data.toString();
+
+    // Convert Markdown to HTML
+    if (currentType === 'text/markdown' && targetType === 'text/html') {
+      const { marked } = require('marked');
+      const html = marked.parse(str);
+      return Buffer.from(html);
+    }
+
+    // Converting to text/plain just returns the string representation
+    if (targetType === 'text/plain') {
+      return Buffer.from(str);
+    }
+
+    // For other conversions, return original data
+    return data;
   }
 }
 

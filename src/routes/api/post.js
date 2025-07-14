@@ -12,8 +12,14 @@ module.exports = async (req, res) => {
     return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
   }
 
-  if (!Fragment.isSupportedType(type) || !Buffer.isBuffer(req.body)) {
+  if (!Fragment.isSupportedType(type)) {
     logger.warn({ type }, 'unsupported fragment type');
+    return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
+  }
+
+  // Check if body is a Buffer - for application/json, it should be
+  if (!Buffer.isBuffer(req.body)) {
+    logger.warn({ bodyType: typeof req.body }, 'request body is not a Buffer');
     return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
   }
 
