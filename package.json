@@ -6,11 +6,12 @@
   "scripts": {
     "test:watch": "jest -c jest.config.js --runInBand --watch --",
     "test": "jest -c jest.config.js --runInBand --",
+    "test:integration": "cross-env PORT=3000 LOG_LEVEL=debug HTPASSWD_FILE=tests/.htpasswd API_URL=http://localhost:3000 hurl --test tests/integration/health-check.hurl tests/integration/404.hurl tests/integration/post-fragments.hurl tests/integration/post-fragments-unsupported-type.hurl tests/integration/post-fragments-charset.hurl tests/integration/post-fragments-unauthenticated.hurl tests/integration/post-fragments-json.hurl",
     "coverage": "jest -c jest.config.js --runInBand --coverage",
     "lint": "eslint \"./src/**/*.js\" \"tests/**/*.js\"",
-    "start": "node src/index.js",
-    "dev": "cross-env LOG_LEVEL=debug nodemon ./src/index.js --watch src",
-    "debug": "cross-env LOG_LEVEL=debug nodemon --inspect=0.0.0.0:9229 ./src/index.js --watch src"
+    "start": "dotenv -e env.production node src/index.js",
+    "dev": "dotenv -e env.development cross-env LOG_LEVEL=debug nodemon ./src/index.js --watch src",
+    "debug": "dotenv -e env.development cross-env LOG_LEVEL=debug nodemon --inspect=0.0.0.0:9229 ./src/index.js --watch src"
   },
   "repository": {
     "type": "git",
@@ -20,7 +21,9 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "@eslint/js": "^9.26.0",
+    "@orangeopensource/hurl": "^6.1.1",
     "cross-env": "^7.0.3",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9.26.0",
     "globals": "^16.1.0",
     "jest": "^29.7.0",

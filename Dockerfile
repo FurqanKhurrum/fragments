@@ -14,15 +14,22 @@ ENV NPM_CONFIG_COLOR=false
 COPY package*.json ./
 RUN npm ci --omit=dev
 
+# Install dotenv-cli globally for production use
+RUN npm install -g dotenv-cli
+
 # Copy application source
 COPY ./src ./src
 COPY ./tests/.htpasswd ./tests/.htpasswd
+COPY env.production ./env.production
 
 # Stage 2: Runtime container
 FROM node:20.10.0-slim
 
 ENV PORT=3000
 WORKDIR /app
+
+# Install dotenv-cli in the runtime container too
+RUN npm install -g dotenv-cli
 
 # Copy only the built artifacts from builder
 COPY --from=builder /app /app
