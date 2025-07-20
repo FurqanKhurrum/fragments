@@ -12,10 +12,8 @@ ENV NPM_CONFIG_COLOR=false
 
 # Copy only dependency files and install
 COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Install dotenv-cli globally for production use
-RUN npm install -g dotenv-cli
+RUN npm ci --omit=dev && \
+    npm install -g dotenv-cli@8.0.0
 
 # Copy application source
 COPY ./src ./src
@@ -28,8 +26,8 @@ FROM node:20.10.0-slim
 ENV PORT=3000
 WORKDIR /app
 
-# Install dotenv-cli in the runtime container too
-RUN npm install -g dotenv-cli
+# Install dotenv-cli in the runtime container with pinned version
+RUN npm install -g dotenv-cli@8.0.0
 
 # Copy only the built artifacts from builder
 COPY --from=builder /app /app
