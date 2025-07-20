@@ -18,7 +18,6 @@ RUN npm ci --omit=dev && \
 # Copy application source
 COPY ./src ./src
 COPY ./tests/.htpasswd ./tests/.htpasswd
-COPY env.production ./env.production
 
 # Stage 2: Runtime container
 FROM node:20.10.0-slim
@@ -33,4 +32,4 @@ RUN npm install -g dotenv-cli@8.0.0
 COPY --from=builder /app /app
 
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["node", "src/index.js"]
