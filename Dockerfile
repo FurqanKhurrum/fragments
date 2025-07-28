@@ -4,11 +4,16 @@ FROM node:20.10.0 AS builder
 LABEL maintainer="Furqan Khurrum <furqan.khurrum99@gmail.com>"
 LABEL description="Fragments node.js microservice"
 
+ARG AWS_S3_BUCKET_NAME
+ARG AWS_REGION
+
 WORKDIR /app
 
 # Reduce npm spam and disable color
 ENV NPM_CONFIG_LOGLEVEL=warn
 ENV NPM_CONFIG_COLOR=false
+ENV AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME
+ENV AWS_REGION=$AWS_REGION
 
 # Copy only dependency files and install
 COPY package*.json ./

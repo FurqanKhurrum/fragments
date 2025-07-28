@@ -54,3 +54,7 @@ jobs:
           tags: |
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
+          # Add environment variables that will be baked into the Docker image
+          build-args: |
+            AWS_S3_BUCKET_NAME=seneca-fkhurrum-fragments
+            AWS_REGION=us-east-1
