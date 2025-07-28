@@ -1,0 +1,52 @@
+{
+  "family": "fragments-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::470742339740:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::470742339740:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "fragments",
+      "image": "470742339740.dkr.ecr.us-east-1.amazonaws.com/fragments:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/fragments",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        {
+          "name": "LOG_LEVEL",
+          "value": "info"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "PORT",
+          "value": "3000"
+        },
+        {
+          "name": "AWS_S3_BUCKET_NAME",
+          "value": "seneca-fkhurrum-fragments"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "us-east-1"
+        }
+      ]
+    }
+  ]
+}
