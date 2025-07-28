@@ -18,10 +18,18 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       # Ensure we use port 3000
       - PORT=3000
-    # Ports to publish
+      # AWS S3 Configuration for LocalStack
+      - AWS_S3_BUCKET_NAME=fragments
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_SESSION_TOKEN=test
+      - AWS_REGION=us-east-1
+      - AWS_S3_ENDPOINT_URL=http://localstack:4566
     ports:
       - '3000:3000'
     # Override the default command to avoid using dotenv-cli
+    depends_on:
+      - localstack
     command: ["node", "src/index.js"]
 
   # DynamoDB Local, see: https://hub.docker.com/r/amazon/dynamodb-local

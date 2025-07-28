@@ -269,4 +269,46 @@ router.get('/fragments/:id', async (req, res) => {
   }
 });
 
+// DELETE /v1/fragments/:id
+router.delete('/fragments/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    logger.debug({ user: req.user, id }, 'Deleting fragment');
+
+    // Verify the fragment exists and belongs to the user before deleting
+    await Fragment.byId(req.user, id);
+    
+    // Delete the fragment using the static method
+    await Fragment.delete(req.user, id);
+    
+    logger.info({ user: req.user, id }, 'Fragment deleted successfully');
+    
+    // Return 200 status as expected by the test
+    res.status(200).json({
+      status: 'ok'
+    });
+    
+  } catch (err) {
+    logger.error({ err, user: req.user, id: req.params.id }, 'Error deleting fragment');
+    
+    if (err.message === 'Fragment not found') {
+      return res.status(404).json({
+        status: 'error',
+        error: {
+          message: 'Fragment not found',
+          code: 404,
+        },
+      });
+    }
+    
+    res.status(500).json({
+      status: 'error',
+      error: {
+        message: 'Unable to delete fragment',
+        code: 500,
+      },
+    });
+  }
+});
+
 module.exports = router;

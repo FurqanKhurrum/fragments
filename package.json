@@ -1,12 +1,12 @@
 {
   "name": "fragments",
   "private": true,
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "Fragments back-end API",
   "scripts": {
     "test:watch": "jest -c jest.config.js --runInBand --watch --",
     "test": "jest -c jest.config.js --runInBand --",
-    "test:integration": "cross-env PORT=3000 LOG_LEVEL=debug HTPASSWD_FILE=tests/.htpasswd API_URL=http://localhost:3000 hurl --test tests/integration/health-check.hurl tests/integration/404.hurl tests/integration/post-fragments.hurl tests/integration/post-fragments-unsupported-type.hurl tests/integration/post-fragments-charset.hurl tests/integration/post-fragments-unauthenticated.hurl tests/integration/post-fragments-json.hurl",
+    "test:integration": "cross-env PORT=3000 LOG_LEVEL=debug HTPASSWD_FILE=tests/.htpasswd API_URL=http://localhost:3000 hurl --test tests/integration/health-check.hurl tests/integration/404.hurl tests/integration/post-fragments.hurl tests/integration/post-fragments-unsupported-type.hurl tests/integration/post-fragments-charset.hurl tests/integration/post-fragments-unauthenticated.hurl tests/integration/post-fragments-json.hurl tests/integration/lab-9-s3.hurl",
     "coverage": "jest -c jest.config.js --runInBand --coverage",
     "lint": "eslint \"./src/**/*.js\" \"tests/**/*.js\"",
     "start": "dotenv -e env.production node src/index.js",
@@ -32,6 +32,7 @@
     "supertest": "^7.1.1"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.850.0",
     "aws-jwt-verify": "^5.1.0",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
