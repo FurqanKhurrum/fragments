@@ -1,11 +1,15 @@
 // src/model/data/index.js
 
-// Decide which data backend to use based on environment
-// If we have AWS S3 configured, use AWS backend, otherwise use memory
-if (process.env.AWS_S3_BUCKET_NAME) {
-  // Use AWS backend (S3 for data, memory for metadata)
+// Use AWS backend only if all required AWS environment variables are properly set
+const hasAWSConfig = process.env.AWS_S3_BUCKET_NAME && 
+process.env.AWS_ACCESS_KEY_ID && 
+process.env.AWS_SECRET_ACCESS_KEY && 
+process.env.AWS_REGION;
+
+if (hasAWSConfig) {
+  console.log(`Using AWS backend with S3 bucket: ${process.env.AWS_S3_BUCKET_NAME}`);
   module.exports = require('./aws');
 } else {
-  // Use memory backend for both data and metadata
+  console.log('Using memory backend');
   module.exports = require('./memory');
 }
