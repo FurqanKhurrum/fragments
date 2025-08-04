@@ -102,7 +102,7 @@ jobs:
             PORT=3000
             AWS_S3_BUCKET_NAME=seneca-fkhurrum-fragments
             AWS_REGION=us-east-1
-            AWS_DYNAMODB_TABLE_NAME=fragments
+            HTPASSWD_FILE=tests/.htpasswd
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

@@ -35,6 +35,10 @@
           "value": "production"
         },
         {
+          "name": "HTPASSWD_FILE",
+          "value": "tests/.htpasswd"
+        },
+        {
           "name": "PORT",
           "value": "3000"
         },
