@@ -35,8 +35,12 @@
           "value": "production"
         },
         {
-          "name": "HTPASSWD_FILE",
-          "value": "tests/.htpasswd"
+          "name": "AWS_COGNITO_POOL_ID", 
+          "value": "us-east-1_UsHIsMBLl"
+        },
+        {
+          "name": "AWS_COGNITO_CLIENT_ID",
+          "value": "68n47ooqg5i3dlvc82ks0nea20"
         },
         {
           "name": "PORT",
