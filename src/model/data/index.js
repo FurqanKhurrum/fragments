@@ -1,15 +1,13 @@
 // src/model/data/index.js
 
-// Use AWS backend only if all required AWS environment variables are properly set
-const hasAWSConfig = process.env.AWS_S3_BUCKET_NAME && 
-process.env.AWS_ACCESS_KEY_ID && 
-process.env.AWS_SECRET_ACCESS_KEY && 
-process.env.AWS_REGION;
+const logger = require('../../logger');
 
-if (hasAWSConfig) {
-  console.log(`Using AWS backend with S3 bucket: ${process.env.AWS_S3_BUCKET_NAME}`);
+// Use AWS backend if S3 bucket name is configured
+// (AWS credentials not required when using IAM roles in ECS)
+if (process.env.AWS_S3_BUCKET_NAME) {
+  logger.info(`Using AWS backend with S3 bucket: ${process.env.AWS_S3_BUCKET_NAME}`);
   module.exports = require('./aws');
 } else {
-  console.log('Using memory backend');
+  logger.info('Using memory backend');
   module.exports = require('./memory');
 }
