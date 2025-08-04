@@ -101,6 +101,7 @@ jobs:
             NODE_ENV=production
             PORT=3000
             AWS_S3_BUCKET_NAME=seneca-fkhurrum-fragments
+            API_URL=http://3.227.24.68:3000
             AWS_REGION=us-east-1
             HTPASSWD_FILE=tests/.htpasswd
 
