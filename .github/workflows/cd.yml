@@ -90,4 +90,3 @@ jobs:
           task-definition: ${{ steps.update-task-def.outputs.task-definition }}
           cluster: fragments-cluster
           service: fragments-service
-          wait-for-service-stability: true
