@@ -25,6 +25,9 @@ services:
       - AWS_SESSION_TOKEN=test
       - AWS_REGION=us-east-1
       - AWS_S3_ENDPOINT_URL=http://localstack:4566
+
+      - AWS_DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
+      - AWS_DYNAMODB_TABLE_NAME=${AWS_DYNAMODB_TABLE_NAME:-fragments}
     ports:
       - '3000:3000'
     # Override the default command to avoid using dotenv-cli
