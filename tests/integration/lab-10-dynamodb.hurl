@@ -22,7 +22,7 @@ fragment1_id: jsonpath "$.fragment.id"
 
 # 2. GET /v1/fragments/:id/info
 ###############################
-GET http://{{fragment1_url}}/info
+GET {{fragment1_url}}/info
 [BasicAuth]
 user1@email.com:password1
 
@@ -54,7 +54,7 @@ fragment2_id: jsonpath "$.fragment.id"
 
 # 4. GET /v1/fragments/:id/info
 ###############################
-GET http://{{fragment2_url}}/info
+GET {{fragment2_url}}/info
 [BasicAuth]
 user1@email.com:password1
 
@@ -82,7 +82,7 @@ jsonpath "$.fragments" includes {{fragment2_id}}
 
 # 6. DELETE /v1/fragments/:id
 #############################
-DELETE http://{{fragment1_url}}
+DELETE {{fragment1_url}}
 [BasicAuth]
 user1@email.com:password1
 
@@ -92,7 +92,7 @@ HTTP/1.1 200
 
 # 7. GET /v1/fragments/:id
 ###############################
-GET http://{{fragment1_url}}
+GET {{fragment1_url}}
 [BasicAuth]
 user1@email.com:password1
 

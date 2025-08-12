@@ -29,7 +29,7 @@ url: header "Location"
 
 # 2.1. GET /v1/fragments/:id
 # ##########################
-GET http://{{url}}
+GET {{url}}
 [BasicAuth]
 user1@email.com:password1
 

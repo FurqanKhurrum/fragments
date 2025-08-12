@@ -30,7 +30,7 @@ jsonpath "$.fragment.size" == 50
 [Captures]
 url: header "Location"
 
-GET http://{{url}}
+GET {{url}}
 [BasicAuth]
 user1@email.com:password1
 

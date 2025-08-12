@@ -19,7 +19,7 @@ location_path: header "Location"
 
 # 2. Authenticated GET /v1/fragments/:id
 ########################################
-GET http://{{location_path}}
+GET {{location_path}}
 [BasicAuth]
 user1@email.com:password1
 
@@ -32,7 +32,7 @@ body == "Hello S3!"
 
 # 3. Authenticated DELETE /v1/fragments/:id
 ###########################################
-DELETE http://{{location_path}}
+DELETE {{location_path}}
 [BasicAuth]
 user1@email.com:password1
 
@@ -42,7 +42,7 @@ HTTP/1.1 200
 
 # 4. Authenticated GET /v1/fragments/:id of deleted fragment
 ############################################################
-GET http://{{location_path}}
+GET {{location_path}}
 [BasicAuth]
 user1@email.com:password1
 
