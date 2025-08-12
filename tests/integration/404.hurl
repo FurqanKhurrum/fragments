@@ -1,11 +1,14 @@
-# 404 Not Found Test
+# tests/integration/404.hurl
+
+# 1. 404 Test
+######################################
 GET http://localhost:3000/no-such-route
 
-# We should get back an HTTP 1.1 404 response
+# 1.1 Response
+# ############
 HTTP/1.1 404
 
-# Extra checks to perform against the response
 [Asserts]
-
-# We expect the response to have a 404 status code
-status == 404
+jsonpath "$.status" == "error"
+jsonpath "$.error.code" == 404
+jsonpath "$.error.message" == "not found"

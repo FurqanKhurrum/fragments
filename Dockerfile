@@ -1,45 +1,25 @@
-# Dockerfile - Alternative with pre-built Sharp
-
-# Stage 1: Build dependencies
-FROM node:20.10.0 AS builder
-
-LABEL maintainer="Furqan Khurrum <furqan.khurrum99@gmail.com>"
-LABEL description="Fragments node.js microservice"
-
-ARG AWS_S3_BUCKET_NAME
-ARG AWS_REGION
-
-WORKDIR /app
-
-# Reduce npm spam and disable color
-ENV NPM_CONFIG_LOGLEVEL=warn
-ENV NPM_CONFIG_COLOR=false
-ENV AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME
-ENV AWS_REGION=$AWS_REGION
-
-# Tell Sharp to use pre-built binaries
-ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
-
-# Copy only dependency files and install
+# Stage 1
+FROM node:20-slim AS dependencies
+WORKDIR /fragments
+ENV NODE_ENV=production NPM_CONFIG_LOGLEVEL=warn NPM_CONFIG_COLOR=false SHARP_IGNORE_GLOBAL_LIBVIPS=1
 COPY package*.json ./
-RUN npm ci --omit=dev && \
-    npm install -g dotenv-cli@8.0.0
-
-# Copy application source
+RUN npm ci --omit=dev
 COPY ./src ./src
 COPY ./tests/.htpasswd ./tests/.htpasswd
 
-# Stage 2: Runtime container
-FROM node:20.10.0-slim
+# Stage 2 (setup)
+FROM node:20-slim AS setup
+WORKDIR /fragments
+COPY --from=dependencies /fragments /fragments
 
-ENV PORT=3000
-WORKDIR /app
-
-# Install dotenv-cli in the runtime container with pinned version
-RUN npm install -g dotenv-cli@8.0.0
-
-# Copy only the built artifacts from builder
-COPY --from=builder /app /app
-
+# Stage 3 (run)
+FROM node:20-slim AS run
+WORKDIR /fragments
+COPY --from=setup /fragments /fragments
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production PORT=3000
+USER node
 EXPOSE 3000
-CMD ["node", "src/index.js"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -fsS http://localhost:3000/health || exit 1
+CMD ["node","src/index.js"]

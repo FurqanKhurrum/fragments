@@ -1,24 +1,19 @@
 // src/server.js
 
-// We want to gracefully shutdown our server
-const stoppable = require('stoppable');
-
-// Get our logger instance
 const logger = require('./logger');
-
-// Get our express app instance
+const stoppable = require('stoppable');
 const app = require('./app');
 
-// Get the desired port from the process' environment. Default to `8080`
+// get port number. default to 3000
 const port = parseInt(process.env.PORT || '3000', 10);
 
-// Start a server listening on this port
+// start the server, and wrap it with stoppable to gracefully shutdown our server
 const server = stoppable(
   app.listen(port, () => {
-    // Log a message that the server has started, and which port it's using.
-    logger.info(`Server started on port ${port}`);
+    // log a message that server has started on the set port
+    logger.info({ port }, 'Server Started');
   })
 );
 
-// Export our server instance so other parts of our code can access it if necessary.
+// export our server instance to be accessed by other parts of the code if necessary
 module.exports = server;

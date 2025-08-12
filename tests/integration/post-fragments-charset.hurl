@@ -1,35 +1,42 @@
 # tests/integration/post-fragments-charset.hurl
 
-# Test posting a fragment with a charset in the Content-Type
+# 1. Authenticated POST /v1/fragments with content type having charset...
+#########################################################################
 POST http://localhost:3000/v1/fragments
 Content-Type: text/plain; charset=utf-8
 [BasicAuth]
 user1@email.com:password1
-```
-This is a fragment with charset
-```
+`This is a fragment!`
 
-# We should get back an HTTP 1.1 201 response
+# 1.1. Response
+###############
 HTTP/1.1 201
-
-# Response should include fragment metadata
 [Asserts]
-header "Content-Type" == "application/json; charset=utf-8"
-header "Location" matches /^http:\/\/localhost:3000\/v1\/fragments\/[A-Za-z0-9_-]+$/
+
+header "Location" matches "^(http:\/\/)?localhost:3000\/v1\/fragments\/[A-Za-z0-9_-]+$"
 jsonpath "$.status" == "ok"
+jsonpath "$.fragment.id" matches "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+jsonpath "$.fragment.ownerId" matches "^[0-9a-fA-F]+$"
+jsonpath "$.fragment.created" isString
+jsonpath "$.fragment.updated" isString
 jsonpath "$.fragment.type" == "text/plain; charset=utf-8"
+jsonpath "$.fragment.size" == 19
 
-# Capture the fragment ID for the next request
+# 2. End-to-end
+######################################
 [Captures]
-fragmentId: jsonpath "$.fragment.id"
+url: header "Location"
 
-# Now GET the fragment to confirm the type is preserved
-GET http://localhost:3000/v1/fragments/{{fragmentId}}
+# 2.1. GET /v1/fragments/:id
+############################
+GET http://{{url}}
 [BasicAuth]
 user1@email.com:password1
 
-# Should return the fragment with correct Content-Type
+# 2.2. Response
+###############
 HTTP/1.1 200
+Content-Type: text/plain; charset=utf-8
+Content-Length: 19
 [Asserts]
-header "Content-Type" == "text/plain; charset=utf-8"
-body == "This is a fragment with charset\n"
+body == "This is a fragment!"

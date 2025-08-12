@@ -1,46 +1,33 @@
-const { Fragment } = require('../../model/fragment');
-const contentType = require('content-type');
+// src/routes/api/post.js
+
 const logger = require('../../logger');
+const { Fragment } = require('../../model/fragment');
+const { createSuccessResponse, createErrorResponse } = require('../../response');
 
-module.exports = async (req, res) => {
-  logger.debug({ headers: req.headers }, 'handling POST /v1/fragments');
-  let type;
-  try {
-    ({ type } = contentType.parse(req));
-  } catch (err) {
-    logger.warn({ err }, 'unable to parse Content-Type header');
-    return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
-  }
+// Post /v1/fragments
+module.exports.postFragment = async (req, res) => {
+  const ownerId = req.user;
+  const type = req.get('Content-Type');
+  const body = req.body;
 
-  if (!Fragment.isSupportedType(type)) {
-    logger.warn({ type }, 'unsupported fragment type');
-    return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
-  }
-
-  // Check if body is a Buffer - for application/json, it should be
-  if (!Buffer.isBuffer(req.body)) {
-    logger.warn({ bodyType: typeof req.body }, 'request body is not a Buffer');
-    return res.status(415).json({ status: 'error', message: 'Unsupported content type' });
-  }
+  logger.info({ ownerId, type }, `Calling POST ${req.originalUrl}`);
 
   try {
-    const fragment = new Fragment({
-      ownerId: req.user,
-      type: req.headers['content-type'],
-      size: req.body.length,
-    });
-
+    const fragment = new Fragment({ ownerId: ownerId, type: type });
+    await fragment.setData(body);
     await fragment.save();
-    await fragment.setData(req.body);
-    logger.info({ fragmentId: fragment.id }, 'fragment created');
 
-    const baseUrl = process.env.API_URL || `http://${req.headers.host}`;
-    const location = new URL(`/v1/fragments/${fragment.id}`, baseUrl).toString();
-    logger.debug({ location }, 'Location header set');
-    res.setHeader('Location', location);
-    res.status(201).json({ status: 'ok', fragment });
+    const baseUrl = process.env.API_URL || `${req.protocol || 'http'}://${req.get('host')}`;
+    res.set('Location', `${baseUrl}/v1/fragments/${fragment.id}`);
+    res.set('Access-Control-Expose-Headers', 'Location');
+
+    const successResponse = createSuccessResponse({ fragment: fragment });
+    logger.debug({ successResponse }, 'A new fragment has been created');
+
+    res.status(201).json(successResponse);
   } catch (err) {
-    logger.error({ err }, 'POST /v1/fragments failed');
-    res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    const errorResponse = createErrorResponse(415, 'Unsupported content type');
+    logger.warn({ errorResponse }, 'Failed to create a new fragment');
+    res.status(415).json(errorResponse);
   }
 };

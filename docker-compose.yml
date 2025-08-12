@@ -1,61 +1,61 @@
-# docker-compose.yml
 
 services:
   # Fragments microservice API server
   fragments:
-    # Use a proper init process (tini)
     init: true
-    # Build the Docker Image using the Dockerfile
-    # and current directory as the build context
     build: .
-    # Environment variables to use
     environment:
-      # Our API will be running on http://localhost:3000
       - API_URL=http://localhost:3000
-      # Use Basic Auth (for running tests, CI)
       - HTPASSWD_FILE=tests/.htpasswd
-      # Use the LOG_LEVEL set in the host environment, or default to info
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      # Ensure we use port 3000
       - PORT=3000
-      # AWS S3 Configuration for LocalStack
+      # --- S3 (LocalStack) ---
       - AWS_S3_BUCKET_NAME=fragments
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_SESSION_TOKEN=test
       - AWS_REGION=us-east-1
       - AWS_S3_ENDPOINT_URL=http://localstack:4566
-
+      # --- DynamoDB Local ---
       - AWS_DYNAMODB_ENDPOINT_URL=http://dynamodb-local:8000
       - AWS_DYNAMODB_TABLE_NAME=${AWS_DYNAMODB_TABLE_NAME:-fragments}
     ports:
-      - '3000:3000'
-    # Override the default command to avoid using dotenv-cli
+      - "3000:3000"
     depends_on:
-      - localstack
+      localstack:
+        condition: service_healthy
+      dynamodb-local:
+        condition: service_healthy
     command: ["node", "src/index.js"]
+    restart: unless-stopped
 
-  # DynamoDB Local, see: https://hub.docker.com/r/amazon/dynamodb-local
+  # DynamoDB Local
   dynamodb-local:
     image: amazon/dynamodb-local
     ports:
-      # Default port is 8000
-      - '8000:8000'
-    # Run the database in memory, see:
-    # https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.UsageNotes.html
-    command: ['-jar', 'DynamoDBLocal.jar', '-inMemory']
+      - "8000:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"]
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -fsS http://localhost:8000/shell/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
 
-  # LocalStack for S3, see https://docs.localstack.cloud/get-started/#docker-compose
-  # Interact via awscli-local, see https://docs.localstack.cloud/integrations/aws-cli/#installation
+  # LocalStack for S3
   localstack:
-    # https://hub.docker.com/r/localstack/localstack
     image: localstack/localstack
+    container_name: localstack
     ports:
-      - '4566:4566'
+      - "4566:4566"
     environment:
-      # See https://docs.localstack.cloud/localstack/configuration/ and
-      # https://hub.docker.com/r/localstack/localstack for config details.
-      # We only want to run S3
       - SERVICES=s3
-      # We're always working in us-east-1
-      - DEFAULT_REGION=us-east-1
+      # DEFAULT_REGION is deprecated; use AWS_REGION in the app instead
+      - LS_LOG=warn
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -fsS http://localhost:4566/health | grep -q '\"s3\": *\"available\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped

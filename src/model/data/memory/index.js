@@ -1,25 +1,19 @@
 // src/model/data/memory/index.js
+
 const MemoryDB = require('./memory-db');
 
 // Create two in-memory databases: one for fragment metadata and the other for raw data
 const data = new MemoryDB();
 const metadata = new MemoryDB();
 
-// Write a fragment's metadata to memory db. Returns a Promise<void>
+// Write a fragment's metadata to memory db. Returns a Promise
 function writeFragment(fragment) {
-  // Simulate db/network serialization of the value, storing only JSON representation.
-  // This is important because it's how things will work later with AWS data stores.
-  const serialized = JSON.stringify(fragment);
-  return metadata.put(fragment.ownerId, fragment.id, serialized);
+  return metadata.put(fragment.ownerId, fragment.id, fragment);
 }
 
-// Read a fragment's metadata from memory db. Returns a Promise<Object>
-async function readFragment(ownerId, id) {
-  // NOTE: this data will be raw JSON, we need to turn it back into an Object.
-  // You'll need to take care of converting this back into a Fragment instance
-  // higher up in the callstack.
-  const serialized = await metadata.get(ownerId, id);
-  return typeof serialized === 'string' ? JSON.parse(serialized) : serialized;
+// Read a fragment's metadata from memory db. Returns a Promise
+function readFragment(ownerId, id) {
+  return metadata.get(ownerId, id);
 }
 
 // Write a fragment's data buffer to memory db. Returns a Promise
@@ -35,21 +29,14 @@ function readFragmentData(ownerId, id) {
 // Get a list of fragment ids/objects for the given user from memory db. Returns a Promise
 async function listFragments(ownerId, expand = false) {
   const fragments = await metadata.query(ownerId);
-  
-  // If we don't get anything back, return empty array
-  if (!fragments || fragments.length === 0) {
-    return [];
-  }
 
-  const parsedFragments = fragments.map((fragment) => JSON.parse(fragment));
-
-  // If we are supposed to give expanded fragments, return full objects
-  if (expand) {
-    return parsedFragments;
+  // If we don't get anything back, or are supposed to give expanded fragments, return
+  if (expand || !fragments) {
+    return fragments;
   }
 
   // Otherwise, map to only send back the ids
-  return parsedFragments.map((fragment) => fragment.id);
+  return fragments.map((fragment) => fragment.id);
 }
 
 // Delete a fragment's metadata and data from memory db. Returns a Promise
@@ -62,11 +49,9 @@ function deleteFragment(ownerId, id) {
   ]);
 }
 
-module.exports = {
-  listFragments,
-  writeFragment,
-  readFragment,
-  writeFragmentData,
-  readFragmentData,
-  deleteFragment,
-};
+module.exports.listFragments = listFragments;
+module.exports.writeFragment = writeFragment;
+module.exports.readFragment = readFragment;
+module.exports.writeFragmentData = writeFragmentData;
+module.exports.readFragmentData = readFragmentData;
+module.exports.deleteFragment = deleteFragment;

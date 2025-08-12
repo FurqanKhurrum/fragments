@@ -1,20 +1,21 @@
 // src/index.js
 
-require('dotenv').config();
-
 const logger = require('./logger');
 
-// Handle uncaught exceptions
+// read env variables from .env file (if present)
+require('dotenv').config();
+
+// log first, if we are going to crash due to uncaught exception
+// https://nodejs.org/api/process.html#event-uncaughtexception
 process.on('uncaughtException', (err, origin) => {
   logger.fatal({ err, origin }, 'uncaughtException');
   throw err;
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   logger.fatal({ reason, promise }, 'unhandledRejection');
   throw reason;
 });
 
-// Start the HTTP server
+// start our server
 require('./server');
