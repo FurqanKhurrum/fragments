@@ -6,7 +6,8 @@
   "scripts": {
     "test:watch": "jest -c jest.config.js --runInBand --watch --",
     "test": "jest -c jest.config.js --runInBand --",
-    "test:integration": "cross-env PORT=3000 LOG_LEVEL=debug HTPASSWD_FILE=tests/.htpasswd API_URL=http://localhost:3000 hurl --test tests/integration/health-check.hurl tests/integration/404.hurl tests/integration/post-fragments.hurl tests/integration/post-fragments-unsupported-type.hurl tests/integration/post-fragments-charset.hurl tests/integration/post-fragments-unauthenticated.hurl tests/integration/post-fragments-json.hurl tests/integration/lab-9-s3.hurl tests/integration/lab-10-dynamodb.hurl",
+    "test:integration": "cross-env PORT=3000 LOG_LEVEL=debug HTPASSWD_FILE=tests/.htpasswd API_URL=http://localhost:3000 hurl --test tests/integration/health-check.hurl tests/integration/404.hurl tests/integration/post-fragments.hurl tests/integration/post-fragments-unsupported-type.hurl tests/integration/post-fragments-charset.hurl tests/integration/post-fragments-unauthenticated.hurl tests/integration/post-fragments-json.hurl tests/integration/post-fragments-image.hurl tests/integration/put-fragments.hurl tests/integration/lab-9-s3.hurl tests/integration/lab-10-dynamodb.hurl",
+    "test:integration:ci": "hurl --test tests/integration/*.hurl",
     "coverage": "jest -c jest.config.js --runInBand --coverage",
     "lint": "eslint \"./src/**/*.js\" \"tests/**/*.js\"",
     "start": "dotenv -e env.production node src/index.js",
@@ -49,6 +50,7 @@
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
     "pino-pretty": "^13.0.0",
+    "sharp": "^0.34.3",
     "stoppable": "^1.1.0"
   }
 }

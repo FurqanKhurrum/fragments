@@ -1,3 +1,5 @@
+# Dockerfile - Alternative with pre-built Sharp
+
 # Stage 1: Build dependencies
 FROM node:20.10.0 AS builder
 
@@ -14,6 +16,9 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 ENV NPM_CONFIG_COLOR=false
 ENV AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME
 ENV AWS_REGION=$AWS_REGION
+
+# Tell Sharp to use pre-built binaries
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 
 # Copy only dependency files and install
 COPY package*.json ./

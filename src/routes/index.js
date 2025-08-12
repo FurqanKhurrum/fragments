@@ -18,7 +18,6 @@ router.get('/', (req, res) => {
   });
 });
 
-// Other API routes will go here later...
 router.use('/v1', authenticate(), require('./api'));
-
+//router.use('/v1', authenticate(), require('./api/test'));
 module.exports = router;

@@ -1,53 +1,50 @@
 # .github/workflows/cd.yml
-
-# Continuous Delivery Workflow
-#
-# This runs whenever we push a new tag (e.g., v1.0.0)
-# and pushes a Docker image to our private AWS ECR repo,
-# then deploys it to ECS.
+# Continuous Delivery: tag -> build & push to ECR -> update ECS service (OIDC-based)
 
 name: cd
 
 on:
   push:
-    # Run this workflow when a tag like v0.7.0 is pushed
     tags:
-      - 'v**'
+      - 'v**'   # run on version tags like v0.7.0
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
 
 jobs:
   aws:
     name: AWS
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout the code
+      # 1) Checkout
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Set up Docker Buildx for efficient builds
+      # 2) Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Configure AWS Credentials from GitHub Encrypted Secrets
-      - name: Configure AWS Credentials using Secrets
+      # 3) Configure AWS creds via GitHub OIDC (no static keys)
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/github-ci-ecr-ecs   # <-- REPLACE
           aws-region: us-east-1
 
-      # Login to Amazon ECR
+      # 4) Login to ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build and Push an Image to Amazon ECR
+      # 5) Build & Push image to ECR (tag + latest)
       - name: Build and push to Amazon ECR
+        uses: docker/build-push-action@v6
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPO: fragments
-          VERSION_TAG: ${{ github.ref_name }}
-        uses: docker/build-push-action@v6
+          VERSION_TAG: ${{ github.ref_name }}  # e.g., v0.7.0
         with:
           context: .
           push: true
@@ -55,10 +52,7 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
 
-      # We need to update our fragment's Task Definition JSON
-      # (i.e., fragments-definition.json) to use the newly
-      # updated Docker Image to use (i.e., the tag we just pushed to ECR).
-      # We can also update/set the environment variables if we want.
+      # 6) Render task definition with new image + env vars
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: update-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -68,11 +62,9 @@ jobs:
           VERSION_TAG: ${{ github.ref_name }}
         with:
           task-definition: fragments-definition.json
+          # MUST MATCH the container name in fragments-definition.json
           container-name: fragments-fk
-          # Use the image we just built and pushed to ECR for this tag
           image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ env.VERSION_TAG }}
-          # Add all the necessary environment variables
-          # NOTE: AWS credentials removed - using IAM roles instead!
           environment-variables: |
             LOG_LEVEL=info
             NODE_ENV=production
@@ -83,10 +75,11 @@ jobs:
             AWS_COGNITO_POOL_ID=us-east-1_UsHIsMBLl
             AWS_COGNITO_CLIENT_ID=68n47ooqg5i3dlvc82ks0nea20
 
-      # Deploy the updated task definition to ECS
+      # 7) Deploy to ECS and wait for stability
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.update-task-def.outputs.task-definition }}
           cluster: fragments-cluster
           service: fragments-service
+          wait-for-service-stability: true
