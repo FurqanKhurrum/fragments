@@ -27,7 +27,7 @@ module.exports.postFragment = async (req, res) => {
     res.status(201).json(successResponse);
   } catch (err) {
     const errorResponse = createErrorResponse(415, 'Unsupported content type');
-    logger.warn({ errorResponse }, 'Failed to create a new fragment');
+    logger.warn({ errorResponse, error: err.message}, 'Failed to create a new fragment');
     res.status(415).json(errorResponse);
   }
 };
