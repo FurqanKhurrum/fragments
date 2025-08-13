@@ -230,6 +230,69 @@ class Fragment {
     const parsedType = contentType.parse(value);
     return validTypes.includes(parsedType.type);
   }
+
+  /**
+ * Gets the fragment's data converted to the specified type
+ * @param {string} targetType - The MIME type to convert to
+ * @returns Promise<Buffer>
+ */
+  async getConvertedData(targetType) {
+    const data = await this.getData();
+  
+    // If same type, return as-is
+    if (this.mimeType === targetType) {
+      return data;
+    }
+  
+    // Check if conversion is supported
+    if (!this.formats.includes(targetType)) {
+      throw new Error(`Cannot convert ${this.mimeType} to ${targetType}`);
+    }
+  
+    // Text conversions
+    if (this.mimeType === 'text/markdown') {
+      if (targetType === 'text/html') {
+        const MarkdownIt = require('markdown-it');
+        const md = new MarkdownIt();
+        return Buffer.from(md.render(data.toString()));
+      }
+      if (targetType === 'text/plain') {
+        return data; // Markdown is already plain text
+      }
+    }
+  
+    if (this.mimeType === 'text/html' && targetType === 'text/plain') {
+      // Simple HTML tag stripping
+      const text = data.toString().replace(/<[^>]*>/g, '');
+      return Buffer.from(text);
+    }
+  
+    if (this.mimeType === 'application/json' && targetType === 'text/plain') {
+      return data; // JSON is already text
+    }
+  
+    // Image conversions using sharp
+    if (this.mimeType.startsWith('image/')) {
+      const sharp = require('sharp');
+      let sharpInstance = sharp(data);
+    
+      switch(targetType) {
+        case 'image/png':
+          return await sharpInstance.png().toBuffer();
+        case 'image/jpeg':
+          return await sharpInstance.jpeg().toBuffer();
+        case 'image/webp':
+          return await sharpInstance.webp().toBuffer();
+        case 'image/gif':
+          return await sharpInstance.gif().toBuffer();
+        default:
+          throw new Error(`Unsupported image conversion to ${targetType}`);
+      }
+    }
+    throw new Error(`Conversion from ${this.mimeType} to ${targetType} not implemented`);
+  }
 }
+
+
 
 module.exports.Fragment = Fragment;

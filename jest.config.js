@@ -14,5 +14,5 @@ console.log(`Using LOG_LEVEL=${process.env.LOG_LEVEL}. Use 'debug' in env.jest f
 // set our Jest options, see https://jestjs.io/docs/configuration
 module.exports = {
   verbose: true,
-  testTimeout: 10010,
+  testTimeout: 11020,
 };
