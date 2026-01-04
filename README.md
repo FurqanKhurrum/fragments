@@ -1,6 +1,9 @@
 # fragments API
 A back-end REST API built with Node.js and Express.
 
+<img width="975" height="640" alt="image" src="https://github.com/user-attachments/assets/00b07cb8-938b-4aa1-8c1a-b557fb56a351" />
+
+https://youtu.be/jgvzDDaOWcw
 ## Setup Instructions
 1.  **Clone the repository:**
     ```bash
